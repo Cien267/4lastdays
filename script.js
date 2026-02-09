@@ -101,13 +101,19 @@ function saveData() {
   state.dailyData[today].sessions = state.sessions
   state.dailyData[today].totalSeconds = todayTotal
 
-  localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify({
-      dailyData: state.dailyData,
-      lastUpdate: new Date().toISOString(),
-    }),
-  )
+  // Lưu thêm trạng thái hiện tại
+  const saveState = {
+    dailyData: state.dailyData,
+    lastUpdate: new Date().toISOString(),
+    currentState: {
+      pausedTime: state.pausedTime,
+      isRunning: state.isRunning,
+      isPaused: state.isPaused,
+      date: today,
+    },
+  }
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(saveState))
 }
 
 function loadData() {
@@ -121,6 +127,21 @@ function loadData() {
       const today = getDateKey()
       if (state.dailyData[today]) {
         state.sessions = state.dailyData[today].sessions || []
+      }
+
+      // Khôi phục trạng thái timer nếu cùng ngày
+      if (data.currentState && data.currentState.date === today) {
+        state.pausedTime = data.currentState.pausedTime || 0
+        // Không khôi phục isRunning vì sau reload cần bấm lại
+        // Nhưng giữ lại pausedTime để hiển thị đúng
+      } else {
+        // Nếu khác ngày, tính lại từ sessions
+        state.pausedTime = 0
+        state.sessions.forEach((session) => {
+          if (session.duration > 0) {
+            state.pausedTime += session.duration
+          }
+        })
       }
     } catch (e) {
       console.error("Error loading data:", e)
@@ -150,7 +171,12 @@ function startTimer() {
   state.isRunning = true
   state.isPaused = false
   state.startTime = Date.now()
-  state.pausedTime = 0 // Reset về 0 khi start mới
+
+  // Chỉ reset pausedTime = 0 nếu chưa có sessions nào
+  // Nếu đã có sessions (reload sau pause), giữ nguyên pausedTime
+  if (state.sessions.length === 0) {
+    state.pausedTime = 0
+  }
 
   const newSession = {
     id: Date.now(),
