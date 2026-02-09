@@ -2,162 +2,175 @@
 <html lang="vi">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Work Tracker - Theo dõi thời gian làm việc</title>
+    <title>Work Time Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="style.css" />
   </head>
-  <body class="bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
-    <div class="container mx-auto px-4 py-8 max-w-4xl">
+
+  <body
+    class="bg-slate-900 text-slate-100 min-h-screen flex items-center justify-center p-6"
+  >
+    <div class="w-full max-w-4xl space-y-6">
       <!-- Header -->
-      <header class="text-center mb-8">
-        <h1 class="text-4xl font-bold text-slate-800 mb-2">Work Tracker</h1>
-        <p class="text-slate-600">Mục tiêu: 8 giờ/ngày trong 4 ngày</p>
-      </header>
-
-      <!-- Progress Overview -->
-      <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-xl font-semibold text-slate-800">
-            Tổng quan tiến độ
-          </h2>
-          <button
-            id="resetBtn"
-            class="text-sm text-red-500 hover:text-red-700 transition"
-          >
-            Reset dữ liệu
-          </button>
-        </div>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div class="text-center p-4 bg-blue-50 rounded-xl">
-            <div class="text-3xl font-bold text-blue-600" id="totalDays">
-              0/4
-            </div>
-            <div class="text-sm text-slate-600 mt-1">Ngày hoàn thành</div>
-          </div>
-          <div class="text-center p-4 bg-green-50 rounded-xl">
-            <div class="text-3xl font-bold text-green-600" id="totalHours">
-              0h
-            </div>
-            <div class="text-sm text-slate-600 mt-1">Tổng giờ làm</div>
-          </div>
-          <div class="text-center p-4 bg-purple-50 rounded-xl">
-            <div class="text-3xl font-bold text-purple-600" id="avgHours">
-              0h
-            </div>
-            <div class="text-sm text-slate-600 mt-1">Trung bình/ngày</div>
-          </div>
-          <div class="text-center p-4 bg-orange-50 rounded-xl">
-            <div
-              class="text-3xl font-bold text-orange-600"
-              id="overallProgress"
-            >
-              0%
-            </div>
-            <div class="text-sm text-slate-600 mt-1">Tiến độ chung</div>
-          </div>
-        </div>
+      <div class="text-center">
+        <h1 class="text-3xl font-bold">⏱ Work Time Tracker</h1>
+        <p class="text-slate-400 mt-1">
+          Mục tiêu: 8 giờ/ngày · 4 ngày liên tục
+        </p>
       </div>
 
-      <!-- Current Timer -->
-      <div class="bg-white rounded-2xl shadow-lg p-8 mb-6">
-        <div class="text-center mb-6">
-          <div class="text-sm text-slate-500 mb-2">Hôm nay</div>
+      <!-- Overall Progress -->
+      <div class="bg-slate-800 rounded-xl p-5 shadow">
+        <div class="flex justify-between mb-2">
+          <span class="font-semibold">Tổng tiến độ (32 giờ)</span>
+          <span id="totalText" class="text-sm text-slate-300"></span>
+        </div>
+        <div class="w-full bg-slate-700 rounded-full h-4">
           <div
-            id="currentDate"
-            class="text-lg font-semibold text-slate-700 mb-4"
+            id="totalBar"
+            class="bg-emerald-500 h-4 rounded-full transition-all"
           ></div>
-          <div
-            id="timerDisplay"
-            class="text-6xl font-bold text-slate-800 mb-2 font-mono"
+        </div>
+      </div>
+
+      <!-- Input -->
+      <div class="bg-slate-800 rounded-xl p-5 shadow space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <input
+            id="minutesInput"
+            type="number"
+            min="0"
+            placeholder="Phút"
+            class="rounded-lg bg-slate-700 px-3 py-2 focus:outline-none"
+          />
+
+          <input
+            id="hoursInput"
+            type="number"
+            min="0"
+            step="0.1"
+            placeholder="Giờ"
+            class="rounded-lg bg-slate-700 px-3 py-2 focus:outline-none"
+          />
+
+          <select
+            id="daySelect"
+            class="rounded-lg bg-slate-700 px-3 py-2 focus:outline-none"
+          ></select>
+
+          <button
+            onclick="addTime()"
+            class="bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-semibold rounded-lg px-4"
           >
-            00:00:00
-          </div>
-          <div id="sessionStatus" class="text-sm text-slate-500">
-            Chưa bắt đầu
-          </div>
-        </div>
-
-        <!-- Progress Bar -->
-        <div class="mb-6">
-          <div class="flex justify-between text-sm text-slate-600 mb-2">
-            <span>Tiến độ hôm nay</span>
-            <span id="todayProgress">0%</span>
-          </div>
-          <div class="h-3 bg-slate-200 rounded-full overflow-hidden">
-            <div
-              id="progressBar"
-              class="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300"
-              style="width: 0%"
-            ></div>
-          </div>
-          <div class="flex justify-between text-xs text-slate-400 mt-1">
-            <span>0h</span>
-            <span>8h</span>
-          </div>
-        </div>
-
-        <!-- Control Buttons -->
-        <div class="flex gap-3 justify-center">
-          <button id="startBtn" class="btn btn-primary">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"
-              />
-            </svg>
-            Start
-          </button>
-          <button id="pauseBtn" class="btn btn-secondary" disabled>
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                d="M5.75 3a.75.75 0 00-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75V3.75A.75.75 0 007.25 3h-1.5zM12.75 3a.75.75 0 00-.75.75v12.5c0 .414.336.75.75.75h1.5a.75.75 0 00.75-.75V3.75a.75.75 0 00-.75-.75h-1.5z"
-              />
-            </svg>
-            Pause
-          </button>
-          <button id="stopBtn" class="btn btn-danger" disabled>
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                d="M5.25 3A2.25 2.25 0 003 5.25v9.5A2.25 2.25 0 005.25 17h9.5A2.25 2.25 0 0017 14.75v-9.5A2.25 2.25 0 0014.75 3h-9.5z"
-              />
-            </svg>
-            Stop
+            ➕ Add time
           </button>
         </div>
+        <p class="text-sm text-slate-400">
+          * Có thể nhập phút <b>hoặc</b> giờ (hoặc cả hai)
+        </p>
       </div>
 
-      <!-- Today's Analysis -->
+      <!-- Days -->
       <div
-        id="todayAnalysis"
-        class="bg-white rounded-2xl shadow-lg p-6 mb-6 hidden"
-      >
-        <h3 class="text-xl font-semibold text-slate-800 mb-4">
-          Phân tích hôm nay
-        </h3>
-        <div id="analysisContent" class="space-y-3"></div>
-      </div>
-
-      <!-- Session History -->
-      <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
-        <h3 class="text-xl font-semibold text-slate-800 mb-4">
-          Lịch sử làm việc hôm nay
-        </h3>
-        <div id="sessionHistory" class="space-y-2">
-          <p class="text-slate-500 text-center py-4">
-            Chưa có phiên làm việc nào
-          </p>
-        </div>
-      </div>
-
-      <!-- Daily History -->
-      <div class="bg-white rounded-2xl shadow-lg p-6">
-        <h3 class="text-xl font-semibold text-slate-800 mb-4">
-          Lịch sử 4 ngày
-        </h3>
-        <div id="dailyHistory" class="space-y-3"></div>
-      </div>
+        id="daysContainer"
+        class="grid grid-cols-1 md:grid-cols-2 gap-4"
+      ></div>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+      const DAILY_TARGET = 480 // minutes
+      const DAYS = 4
+      const STORAGE_KEY = "work-tracker"
+
+      function formatDateLocal(date) {
+        const y = date.getFullYear()
+        const m = String(date.getMonth() + 1).padStart(2, "0")
+        const d = String(date.getDate()).padStart(2, "0")
+        return `${y}-${m}-${d}`
+      }
+
+      const startDate = new Date()
+      startDate.setHours(0, 0, 0, 0)
+
+      let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}
+
+      function initDays() {
+        const container = document.getElementById("daysContainer")
+        const select = document.getElementById("daySelect")
+
+        for (let i = 0; i < DAYS; i++) {
+          const d = new Date(startDate)
+          d.setDate(startDate.getDate() + i)
+          const key = formatDateLocal(d)
+
+          if (!data[key]) data[key] = 0
+
+          // select
+          const opt = document.createElement("option")
+          opt.value = key
+          opt.textContent = `Day ${i + 1} · ${key}`
+          select.appendChild(opt)
+
+          // card
+          const card = document.createElement("div")
+          card.className = "bg-slate-800 rounded-xl p-5 shadow space-y-2"
+          card.id = `card-${key}`
+
+          card.innerHTML = `
+      <div class="flex justify-between">
+        <span class="font-semibold">Day ${i + 1}</span>
+        <span id="text-${key}" class="text-sm text-slate-300"></span>
+      </div>
+      <div class="w-full bg-slate-700 rounded-full h-3">
+        <div id="bar-${key}" class="bg-sky-500 h-3 rounded-full transition-all"></div>
+      </div>
+    `
+
+          container.appendChild(card)
+        }
+
+        updateUI()
+      }
+
+      function addTime() {
+        const minutes = parseInt(minutesInput.value || 0)
+        const hours = parseFloat(hoursInput.value || 0)
+        const day = daySelect.value
+
+        const totalMinutes = minutes + hours * 60
+        if (totalMinutes <= 0) return
+
+        data[day] += totalMinutes
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+
+        minutesInput.value = ""
+        hoursInput.value = ""
+
+        updateUI()
+      }
+
+      function updateUI() {
+        let total = 0
+
+        Object.keys(data).forEach((key) => {
+          const worked = data[key]
+          total += worked
+
+          const percent = Math.min((worked / DAILY_TARGET) * 100, 100)
+
+          document.getElementById(`bar-${key}`).style.width = percent + "%"
+          document.getElementById(`text-${key}`).textContent =
+            `${(worked / 60).toFixed(2)} / 8 giờ`
+        })
+
+        const totalPercent = Math.min(
+          (total / (DAILY_TARGET * DAYS)) * 100,
+          100,
+        )
+        totalBar.style.width = totalPercent + "%"
+        totalText.textContent = `${(total / 60).toFixed(2)} / 32 giờ`
+      }
+
+      initDays()
+    </script>
   </body>
 </html>
