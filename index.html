@@ -74,6 +74,59 @@
         id="daysContainer"
         class="grid grid-cols-1 md:grid-cols-2 gap-4"
       ></div>
+
+      <!-- Stopwatch -->
+      <div class="bg-slate-800 rounded-xl p-5 shadow space-y-4">
+        <div class="text-center">
+          <h2 class="text-xl font-semibold">⏱ Stopwatch</h2>
+          <p class="text-slate-400 text-sm">
+            Đồng hồ bấm giờ độc lập (không tự cộng tiến độ)
+          </p>
+        </div>
+
+        <div
+          id="stopwatchDisplay"
+          class="text-center text-5xl font-mono tracking-wider"
+        >
+          00:00:00
+        </div>
+
+        <div class="flex justify-center gap-3">
+          <button
+            onclick="startStopwatch()"
+            class="bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-semibold px-4 py-2 rounded-lg"
+          >
+            ▶ Start
+          </button>
+
+          <button
+            onclick="pauseStopwatch()"
+            class="bg-amber-400 hover:bg-amber-300 text-slate-900 font-semibold px-4 py-2 rounded-lg"
+          >
+            ⏸ Pause
+          </button>
+
+          <button
+            onclick="stopStopwatch()"
+            class="bg-sky-500 hover:bg-sky-400 text-slate-900 font-semibold px-4 py-2 rounded-lg"
+          >
+            ⏹ Stop
+          </button>
+
+          <button
+            onclick="resetStopwatch()"
+            class="bg-rose-500 hover:bg-rose-400 text-slate-900 font-semibold px-4 py-2 rounded-lg"
+          >
+            🔄 Reset
+          </button>
+        </div>
+        <button
+          onclick="copyStopwatchToMinutes()"
+          class="bg-indigo-400 hover:bg-indigo-300 text-slate-900 font-semibold px-4 py-2 rounded-lg"
+        >
+          📋 Copy → Minutes
+        </button>
+      </div>
     </div>
 
     <script>
@@ -116,14 +169,14 @@
           card.id = `card-${key}`
 
           card.innerHTML = `
-      <div class="flex justify-between">
-        <span class="font-semibold">Day ${i + 1}</span>
-        <span id="text-${key}" class="text-sm text-slate-300"></span>
-      </div>
-      <div class="w-full bg-slate-700 rounded-full h-3">
-        <div id="bar-${key}" class="bg-sky-500 h-3 rounded-full transition-all"></div>
-      </div>
-    `
+            <div class="flex justify-between">
+              <span class="font-semibold">Day ${i + 1}</span>
+              <span id="text-${key}" class="text-sm text-slate-300"></span>
+            </div>
+            <div class="w-full bg-slate-700 rounded-full h-3">
+              <div id="bar-${key}" class="bg-sky-500 h-3 rounded-full transition-all"></div>
+            </div>
+          `
 
           container.appendChild(card)
         }
@@ -171,6 +224,78 @@
       }
 
       initDays()
+
+      /* ======================
+         STOPWATCH (INDEPENDENT)
+      ====================== */
+
+      let stopwatchInterval = null
+      let stopwatchStartTime = null
+      let elapsedTime = 0 // ms
+      let isRunning = false
+
+      function formatTime(ms) {
+        const totalSeconds = Math.floor(ms / 1000)
+        const hours = Math.floor(totalSeconds / 3600)
+        const minutes = Math.floor((totalSeconds % 3600) / 60)
+        const seconds = totalSeconds % 60
+
+        return [
+          String(hours).padStart(2, "0"),
+          String(minutes).padStart(2, "0"),
+          String(seconds).padStart(2, "0"),
+        ].join(":")
+      }
+
+      function updateStopwatchDisplay() {
+        stopwatchDisplay.textContent = formatTime(elapsedTime)
+      }
+
+      function startStopwatch() {
+        if (isRunning) return
+
+        isRunning = true
+        stopwatchStartTime = Date.now() - elapsedTime
+
+        stopwatchInterval = setInterval(() => {
+          elapsedTime = Date.now() - stopwatchStartTime
+          updateStopwatchDisplay()
+        }, 200)
+      }
+
+      function pauseStopwatch() {
+        if (!isRunning) return
+
+        isRunning = false
+        clearInterval(stopwatchInterval)
+      }
+
+      function stopStopwatch() {
+        if (!isRunning) return
+
+        isRunning = false
+        clearInterval(stopwatchInterval)
+        updateStopwatchDisplay()
+      }
+
+      function resetStopwatch() {
+        isRunning = false
+        clearInterval(stopwatchInterval)
+        elapsedTime = 0
+        updateStopwatchDisplay()
+      }
+
+      function copyStopwatchToMinutes() {
+        const minutes = Math.floor(elapsedTime / 60000)
+
+        if (minutes <= 0) return
+
+        minutesInput.value = minutes
+        hoursInput.value = ""
+
+        // UX nhỏ nhưng rất “đã”
+        minutesInput.focus()
+      }
     </script>
   </body>
 </html>
