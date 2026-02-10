@@ -131,7 +131,7 @@
 
     <script>
       const DAILY_TARGET = 480 // minutes
-      const DAYS = 4
+      let DAYS = 4
       const STORAGE_KEY = "work-tracker"
 
       function formatDateLocal(date) {
@@ -141,9 +141,10 @@
         return `${y}-${m}-${d}`
       }
 
-      const startDate = new Date()
+      const startDate = new Date("2026-02-09")
+      const today = new Date()
       startDate.setHours(0, 0, 0, 0)
-
+      today.setHours(0, 0, 0, 0)
       let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}
 
       function initDays() {
@@ -158,10 +159,12 @@
           if (!data[key]) data[key] = 0
 
           // select
-          const opt = document.createElement("option")
-          opt.value = key
-          opt.textContent = `Day ${i + 1} · ${key}`
-          select.appendChild(opt)
+          if (today <= d) {
+            const opt = document.createElement("option")
+            opt.value = key
+            opt.textContent = `Day ${i + 1} · ${key}`
+            select.appendChild(opt)
+          }
 
           // card
           const card = document.createElement("div")
